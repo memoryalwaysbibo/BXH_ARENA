@@ -1,4 +1,6 @@
 <!DOCTYPE html>
+<!-- v13.29.11: title editor feedback + rarity-aware player cards -->
+
 <!-- BXH ARENA v13.29.10 完整整合版。
 EZPage 使用本完整 HTML。Firebase Rules 與 Cloud Functions 使用同批交付檔案，各更新一次。
 既有 bxh-arena Firebase 設定保留；不需要建立新專案或改成測試規則。
@@ -2251,10 +2253,20 @@ body .celebration-overlay{z-index:3000!important;}
 .checkin-stat{padding:11px 8px;border:1px solid rgba(255,255,255,.08);border-radius:10px;background:rgba(0,0,0,.18);text-align:center;min-width:0;}
 .checkin-stat strong{display:block;color:var(--white);font:700 20px var(--font-d);}
 .checkin-stat span{display:block;color:var(--metal);font-size:10px;margin-top:3px;}
-.title-chip{display:inline-flex;align-items:center;max-width:100%;padding:3px 9px;border:1px solid rgba(217,185,92,.55);border-radius:999px;color:#f3d878;background:rgba(217,185,92,.10);font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;}
-.title-chip.rarity-rare{border-color:#55b8ff;color:#8fd2ff;background:rgba(42,148,223,.11);}
-.title-chip.rarity-epic{border-color:#b56cff;color:#d5a7ff;background:rgba(155,72,230,.12);}
-.title-chip.rarity-legendary,.title-chip.rarity-limited{border-color:#ffbf3c;color:#ffe18a;background:rgba(255,175,26,.12);box-shadow:0 0 14px rgba(255,175,26,.08);}
+.title-chip{display:inline-flex;align-items:center;max-width:100%;padding:3px 9px;border:1px solid rgba(190,198,208,.58);border-radius:999px;color:#dce3ea;background:rgba(183,193,204,.09);font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;}
+.title-chip.rarity-common,.rarity-badge.rarity-common{border-color:#9aa6b2;color:#d7dee5;background:rgba(154,166,178,.10);}
+.title-chip.rarity-rare,.rarity-badge.rarity-rare{border-color:#55b8ff;color:#8fd2ff;background:rgba(42,148,223,.12);box-shadow:0 0 12px rgba(42,148,223,.06);}
+.title-chip.rarity-epic,.rarity-badge.rarity-epic{border-color:#b56cff;color:#d5a7ff;background:rgba(155,72,230,.13);box-shadow:0 0 13px rgba(155,72,230,.08);}
+.title-chip.rarity-legendary,.rarity-badge.rarity-legendary{border-color:#ffbf3c;color:#ffe18a;background:rgba(255,175,26,.13);box-shadow:0 0 14px rgba(255,175,26,.10);}
+.title-chip.rarity-limited,.rarity-badge.rarity-limited{border-color:#ff5d91;color:#ff9fbd;background:rgba(255,65,125,.12);box-shadow:0 0 14px rgba(255,65,125,.09);}
+.title-chip.rarity-eternal,.rarity-badge.rarity-eternal{border-color:#fff0a6;color:#fff7d2;background:linear-gradient(120deg,rgba(255,190,52,.18),rgba(255,255,255,.10),rgba(142,96,255,.14));box-shadow:0 0 9px rgba(255,225,138,.22),0 0 22px rgba(153,101,255,.10);text-shadow:0 0 8px rgba(255,244,194,.34);}
+.rarity-badge{display:inline-flex;align-items:center;padding:2px 7px;border:1px solid rgba(190,198,208,.55);border-radius:999px;font-size:10px;font-weight:800;white-space:nowrap;}
+.title-card.rarity-common{border-color:rgba(154,166,178,.24)}
+.title-card.rarity-rare{border-color:rgba(85,184,255,.36);background:linear-gradient(135deg,rgba(42,148,223,.08),rgba(255,255,255,.018))}
+.title-card.rarity-epic{border-color:rgba(181,108,255,.38);background:linear-gradient(135deg,rgba(155,72,230,.09),rgba(255,255,255,.018))}
+.title-card.rarity-legendary{border-color:rgba(255,191,60,.40);background:linear-gradient(135deg,rgba(255,175,26,.10),rgba(255,255,255,.02))}
+.title-card.rarity-limited{border-color:rgba(255,93,145,.40);background:linear-gradient(135deg,rgba(255,65,125,.09),rgba(255,255,255,.02))}
+.title-card.rarity-eternal{border-color:rgba(255,240,166,.52);background:linear-gradient(135deg,rgba(255,190,52,.12),rgba(255,255,255,.045),rgba(142,96,255,.10));box-shadow:inset 0 0 18px rgba(255,244,194,.035),0 0 18px rgba(153,101,255,.05)}
 .title-setting-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin-top:12px;}
 .title-preview{margin-top:12px;padding:14px;border:1px dashed rgba(217,185,92,.45);border-radius:10px;background:rgba(0,0,0,.18);text-align:center;min-width:0;overflow:hidden;}
 .title-preview-name{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
@@ -2324,6 +2336,33 @@ body .modal-overlay.confirmation-overlay{z-index:2100!important;}
 .fold-arrow{margin-left:auto;font-size:11px;color:var(--metal-dim);white-space:nowrap;}
 .schedule-fold-body{margin-top:14px;}.schedule-fold:not([open]){padding-top:16px;padding-bottom:16px;}
 .schedule-light{display:inline-block;flex:0 0 9px;width:9px;height:9px;border-radius:50%;background:#858990;}.schedule-light.live{background:#32d583;box-shadow:0 0 8px #32d58366;}.schedule-light.waiting{background:#f5a623;}
+
+/* ==== super admin management pages: accounts / check-in / titles ==== */
+.super-admin-management-tabs{
+  display:flex;gap:6px;padding:8px 12px;background:rgba(10,11,13,.97);
+  border-bottom:1px solid var(--border);overflow-x:auto;overflow-y:hidden;
+  scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;
+}
+.super-admin-management-tabs::-webkit-scrollbar{display:none;}
+.super-admin-management-tabs .super-admin-tab{
+  flex:0 0 auto;min-height:40px;padding:8px 15px;border-radius:9px;
+  border:1px solid transparent;background:transparent;color:var(--metal);
+  font-family:var(--font-d);font-size:13px;font-weight:800;letter-spacing:.4px;white-space:nowrap;
+}
+.super-admin-management-tabs .super-admin-tab.active{
+  color:var(--gold);border-color:var(--gold-dim);background:rgba(217,185,92,.10);
+  box-shadow:inset 0 0 0 1px rgba(217,185,92,.05);
+}
+.super-admin-page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
+.super-admin-page-title{font-family:var(--font-d);font-size:20px;font-weight:800;color:var(--ivory);}
+.super-admin-page-sub{font-size:12px;color:var(--metal);margin-top:4px;line-height:1.55;}
+.super-admin-section{margin-top:14px;}
+@media(max-width:640px){
+  .super-admin-management-tabs{padding:7px 10px;}
+  .super-admin-management-tabs .super-admin-tab{min-height:38px;padding:7px 12px;font-size:12px;}
+  .super-admin-page-head .btn{width:100%;}
+}
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
@@ -5599,6 +5638,7 @@ let playerLookupQuery = "";
 let playerCenterContext = null; // { name, records:[...] } — set for the name-search (no-login) flow
 let authFormError = "";
 let accountMgmtUsers = null;
+let superAdminManagementPage = "accounts"; // accounts | checkin | titles
 let accountMgmtBusy = false;
 let accountMgmtRoleFilter = "all";
 let accountMgmtStatusFilter = "all";
@@ -6088,7 +6128,7 @@ function earnedTitleIds(){
   return new Set(((engagementSnapshot&&engagementSnapshot.earned)||[]).map(x=>x.titleId));
 }
 function titleRarityLabel(r){
-  return ({common:"一般",rare:"稀有",epic:"史詩",legendary:"傳說",limited:"限定"})[r]||"一般";
+  return ({common:"一般",rare:"稀有",epic:"史詩",legendary:"傳說",limited:"限定",eternal:"永恆"})[r]||"一般";
 }
 function formatTitleDisplay(realName,gameId,titleName,format,enabled=true){
   const real=String(realName||"").trim()||"玩家";
@@ -6162,7 +6202,7 @@ function renderPlayerTitleCenter(p){
     <div class="btn-row" style="margin-top:12px;"><button class="btn btn-primary" data-action="player-save-title-settings" ${engagementActionBusy?'disabled':''}>${engagementActionBusy?'儲存中…':'儲存稱號設定'}</button></div>
     ${engagementError?`<div class="hint">${esc(engagementError)}；已確認儲存的設定不受影響。<button class="btn btn-ghost btn-sm" data-action="player-refresh-engagement">重新連線</button></div>`:''}
     <div class="panel-title" style="margin-top:20px;">稱號圖鑑</div>
-    ${catalog.length?`<div class="title-gallery">${catalog.map(t=>{const got=earnedIds.has(t.id);const hidden=t.isHidden&&!got;const current=Number((t.progress&&t.progress.currentValue)||0),target=Math.max(1,Number(t.targetValue||1));const pct=got?100:Math.min(100,Math.round(current/target*100));return `<article class="title-card ${got?'':'locked'}"><div class="title-card-name"><span>${esc(hidden?'？？？':t.name)}</span><span class="badge badge-metal">${esc(titleRarityLabel(t.rarity))}</span></div><div class="title-card-desc">${esc(hidden?(t.hint||'達成特殊條件後解鎖'):(t.description||t.hint||'榮譽稱號'))}</div>${!hidden&&(t.source||t.id==='founder')?`<div class="hint">來源：${esc(t.source||'專屬授予')}</div>`:''}<div class="title-progress"><span style="width:${pct}%"></span></div><div class="hint" style="margin-top:5px;">${got?'✓ 已取得':`${current}／${target}`}${t.isActive===false?'・籌備中':''}${t.isLimited?'・限定':''}${t.isArchived?'・已絕版':''}</div></article>`;}).join("")}</div>`:`<div class="empty-state">稱號圖鑑尚未發布；已取得紀錄不會受到影響。</div>`}
+    ${catalog.length?`<div class="title-gallery">${catalog.map(t=>{const got=earnedIds.has(t.id);const hidden=t.isHidden&&!got;const current=Number((t.progress&&t.progress.currentValue)||0),target=Math.max(1,Number(t.targetValue||1));const pct=got?100:Math.min(100,Math.round(current/target*100));return `<article class="title-card rarity-${esc(t.rarity||'common')} ${got?'':'locked'}"><div class="title-card-name"><span>${esc(hidden?'？？？':t.name)}</span><span class="rarity-badge rarity-${esc(t.rarity||'common')}">${esc(titleRarityLabel(t.rarity))}</span></div><div class="title-card-desc">${esc(hidden?(t.hint||'達成特殊條件後解鎖'):(t.description||t.hint||'榮譽稱號'))}</div>${!hidden&&t.source?`<div class="hint">來源：${esc(t.source)}</div>`:''}<div class="title-progress"><span style="width:${pct}%"></span></div><div class="hint" style="margin-top:5px;">${got?'✓ 已取得':`${current}／${target}`}${t.isActive===false?'・籌備中':''}${t.isLimited?'・限定':''}${t.isArchived?'・已絕版':''}</div></article>`;}).join("")}</div>`:`<div class="empty-state">稱號圖鑑尚未發布；已取得紀錄不會受到影響。</div>`}
   </section>`;
 }
 let communityEventsCache = null;
@@ -6234,7 +6274,7 @@ const COMMUNITY_OWNER_ACTIONS = new Set([
 ]);
 const COMMUNITY_OWNER_TIER_ACTIONS = new Set(["set-round-scoring-mode","correct-quick-result","board-reshuffle"]);
 const SUPER_ADMIN_ONLY_ACTIONS = new Set([
-  "open-account-management","create-managed-user-submit","set-user-role","toggle-user-active",
+  "open-account-management","super-admin-page","create-managed-user-submit","set-user-role","toggle-user-active",
   "account-role-filter","account-search-apply","account-clear-filters",
   "unarchive-record","preview-cleanup-public-mirrors","run-cleanup-public-mirrors","ladder-new-season",
   "admin-refresh-engagement","admin-seed-initial-titles","admin-save-engagement-settings","admin-grant-title","admin-revoke-title",
@@ -10638,7 +10678,44 @@ function renderAdminChangePasswordScreen(){
   ` + authShellClose();
 }
 
-function renderEngagementAdminPanel(){
+function renderSuperAdminManagementTabs(activePage){
+  const tabs=[["accounts","帳號管理"],["checkin","簽到管理"],["titles","稱號管理"]];
+  return `<nav class="super-admin-management-tabs" aria-label="最高管理員操作頁切換">${tabs.map(([key,label])=>`<button class="super-admin-tab ${activePage===key?'active':''}" data-action="super-admin-page" data-page="${key}" aria-current="${activePage===key?'page':'false'}">${label}</button>`).join("")}</nav>`;
+}
+function renderEngagementAdminConnectionBlock(){
+  return `<div class="btn-row"><button class="btn btn-ghost" data-action="admin-engagement-diagnose" ${engagementActionBusy?'disabled':''}>檢查稱號與簽到連線</button><button class="btn btn-ghost" data-action="admin-refresh-engagement" ${engagementActionBusy?'disabled':''}>重新載入</button></div>
+    ${engagementDiagnostic?`<div class="hint" role="status" style="margin-top:8px;">${esc(engagementDiagnostic)}</div>`:''}
+    ${engagementError?`<div class="auth-error" style="margin-top:8px;">${esc(engagementError)}</div>`:""}`;
+}
+function renderCheckInManagementPanel(){
+  if(!engagementSnapshot && !engagementLoading && !engagementError) setTimeout(()=>requestEngagementSnapshot(false),0);
+  const s=engagementSettings();
+  const ov=engagementAdminOverview;
+  const totals=(label,value)=>`<div class="stat-box"><div class="label">${label}</div><div class="value small">${Number(value||0)}</div></div>`;
+  return `<section class="panel account-management-panel">
+    <div class="super-admin-page-head"><div><div class="super-admin-page-title">簽到管理</div><div class="super-admin-page-sub">每日簽到功能開關、簽到類稱號判定、簽到統計與異常檢查。</div></div><button class="btn btn-ghost btn-sm" data-action="account-goto-home">返回系統首頁</button></div>
+    ${renderEngagementAdminConnectionBlock()}
+    <div class="super-admin-section">
+      <div class="panel-title">簽到功能設定</div>
+      <p class="hint">每日簽到與賽事報到完全獨立；此頁只調整簽到相關開關，稱號頁設定不會被覆蓋。</p>
+      <div class="grid grid-2 account-management-form-grid">
+        <label class="check-row"><input id="engagement-checkin-enabled" type="checkbox" ${s.dailyCheckInEnabled?'checked':''}> 啟用每日簽到</label>
+        <label class="check-row"><input id="engagement-checkin-awards" type="checkbox" ${s.checkInTitleAwardsEnabled?'checked':''}> 啟用簽到類稱號</label>
+      </div>
+      <div class="btn-row"><button class="btn btn-primary" data-action="admin-save-engagement-settings" ${engagementActionBusy?'disabled':''}>儲存簽到設定</button></div>
+    </div>
+    <details class="account-tools-card" style="margin-top:14px;" ${ov?'open':''}><summary><span>簽到統計與異常檢查</span><span class="hint">最高管理員專用⌄</span></summary><div class="account-tools-body">
+      ${engagementAdminError?`<div class="auth-error">${esc(engagementAdminError)}</div>`:""}
+      <div class="btn-row"><button class="btn btn-ghost" data-action="admin-load-engagement-overview" ${engagementActionBusy?'disabled':''}>${ov?'重新整理統計':'載入統計'}</button></div>
+      ${ov?`<div class="hint" style="margin-top:10px;">彙總從 v13.29.3 部署後開始累積；週／月數字為簽到人次。</div><div class="grid grid-3" style="margin-top:12px;">${totals('今日正式簽到',ov.todaySummary&&ov.todaySummary.officialCount)}${totals('近7日正式人次',ov.weekSummary&&ov.weekSummary.officialCount)}${totals('本月正式人次',ov.monthSummary&&ov.monthSummary.officialCount)}</div>
+        <div class="grid grid-3" style="margin-top:8px;">${totals('今日測試資料',ov.todaySummary&&ov.todaySummary.testCount)}${totals('已掃描玩家統計',ov.anomalySummary&&ov.anomalySummary.scanned)}${totals('異常筆數',ov.anomalySummary&&ov.anomalySummary.count)}</div>
+        ${(ov.anomalySummary&&ov.anomalySummary.sample&&ov.anomalySummary.sample.length)?`<div class="auth-error" style="margin-top:10px;">異常 UID：${ov.anomalySummary.sample.map(x=>`${esc(x.uid)}（${esc((x.reasons||[]).join(','))}）`).join('、')}</div>`:`<div class="hint" style="margin-top:10px;">目前掃描範圍內沒有發現簽到統計異常。</div>`}
+        <div class="panel-title" style="font-size:13px;margin-top:14px;">連續簽到排行</div>
+        ${(ov.topStreaks||[]).length?`<div class="table-scroll"><table class="rank-table"><thead><tr><th>玩家</th><th>目前</th><th>最高</th><th>累積</th></tr></thead><tbody>${ov.topStreaks.map(x=>`<tr><td>${esc(x.name)}${x.isTestData?'（測試）':''}</td><td>${Number(x.stats&&x.stats.currentCheckInStreak||0)}</td><td>${Number(x.stats&&x.stats.highestCheckInStreak||0)}</td><td>${Number(x.stats&&x.stats.totalCheckInDays||0)}</td></tr>`).join('')}</tbody></table></div>`:`<div class="empty-state">尚無簽到統計</div>`}`:""}
+    </div></details>
+  </section>`;
+}
+function renderTitleManagementPanel(){
   if(!engagementSnapshot && !engagementLoading && !engagementError) setTimeout(()=>requestEngagementSnapshot(false),0);
   const s=engagementSettings();
   const catalog=(engagementSnapshot&&engagementSnapshot.catalog)||[];
@@ -10647,49 +10724,38 @@ function renderEngagementAdminPanel(){
   const grantCatalog=titleDefinitions.length?titleDefinitions:catalog;
   const summary=engagementBackfillResult&&engagementBackfillResult.summary;
   const totals=(label,value)=>`<div class="stat-box"><div class="label">${label}</div><div class="value small">${Number(value||0)}</div></div>`;
-  return `<details class="panel account-tools-card" ${(ov||engagementAdminError||engagementActionBusy||engagementBackfillResult||engagementDiagnostic)?'open':''}>
-    <summary><span>稱號與每日簽到</span><span class="hint">V13.29.4 系統控制⌄</span></summary>
-    <div class="account-tools-body">
-      <p class="hint">新功能使用獨立開關；關閉時不影響登入、報名、賽事報到、計分、天梯或封存。</p>
-      <button class="btn btn-ghost" data-action="admin-engagement-diagnose" ${engagementActionBusy?'disabled':''}>檢查稱號與簽到連線</button>
-      ${engagementDiagnostic?`<div class="hint" role="status">${esc(engagementDiagnostic)}</div>`:''}
-      ${engagementError?`<div class="auth-error">${esc(engagementError)}</div>`:""}
+  return `<section class="panel account-management-panel">
+    <div class="super-admin-page-head"><div><div class="super-admin-page-title">稱號管理</div><div class="super-admin-page-sub">稱號功能開關、定義與狀態、六階稀有度視覺、歷史補算、開拓者及人工授予／撤銷。</div></div><button class="btn btn-ghost btn-sm" data-action="account-goto-home">返回系統首頁</button></div>
+    ${renderEngagementAdminConnectionBlock()}
+    <div class="super-admin-section">
+      <div class="panel-title">稱號功能設定</div>
+      <p class="hint">此頁只調整稱號相關開關；每日簽到頁設定不會被覆蓋。</p>
       <div class="grid grid-2 account-management-form-grid">
         <label class="check-row"><input id="engagement-titles-enabled" type="checkbox" ${s.titlesEnabled?'checked':''}> 啟用玩家稱號介面</label>
-        <label class="check-row"><input id="engagement-checkin-enabled" type="checkbox" ${s.dailyCheckInEnabled?'checked':''}> 啟用每日簽到</label>
         <label class="check-row"><input id="engagement-auto-awards" type="checkbox" ${s.automaticTitleAwardsEnabled?'checked':''}> 啟用自動稱號判定</label>
-        <label class="check-row"><input id="engagement-checkin-awards" type="checkbox" ${s.checkInTitleAwardsEnabled?'checked':''}> 啟用簽到類稱號</label>
       </div>
-      <div class="btn-row"><button class="btn btn-ghost" data-action="admin-seed-initial-titles" ${engagementActionBusy?'disabled':''}>建立／同步第一批稱號</button><button class="btn btn-primary" data-action="admin-save-engagement-settings" ${engagementActionBusy?'disabled':''}>儲存功能開關</button><button class="btn btn-ghost" data-action="admin-refresh-engagement" ${engagementActionBusy?'disabled':''}>重新載入</button></div>
-      <details class="account-tools-card" style="margin-top:12px;" ${ov?'open':''}><summary><span>簽到統計與異常檢查</span><span class="hint">最高管理員專用⌄</span></summary><div class="account-tools-body">
-        ${engagementAdminError?`<div class="auth-error">${esc(engagementAdminError)}</div>`:""}
-        <div class="btn-row"><button class="btn btn-ghost" data-action="admin-load-engagement-overview" ${engagementActionBusy?'disabled':''}>${ov?'重新整理統計':'載入統計'}</button></div>
-        ${ov?`<div class="hint" style="margin-top:10px;">彙總從 v13.29.3 部署後開始累積；週／月數字為簽到人次。</div><div class="grid grid-3" style="margin-top:12px;">${totals('今日正式簽到',ov.todaySummary&&ov.todaySummary.officialCount)}${totals('近7日正式人次',ov.weekSummary&&ov.weekSummary.officialCount)}${totals('本月正式人次',ov.monthSummary&&ov.monthSummary.officialCount)}</div>
-          <div class="grid grid-3" style="margin-top:8px;">${totals('今日測試資料',ov.todaySummary&&ov.todaySummary.testCount)}${totals('已掃描玩家統計',ov.anomalySummary&&ov.anomalySummary.scanned)}${totals('異常筆數',ov.anomalySummary&&ov.anomalySummary.count)}</div>
-          ${(ov.anomalySummary&&ov.anomalySummary.sample&&ov.anomalySummary.sample.length)?`<div class="auth-error" style="margin-top:10px;">異常 UID：${ov.anomalySummary.sample.map(x=>`${esc(x.uid)}（${esc((x.reasons||[]).join(','))}）`).join('、')}</div>`:`<div class="hint" style="margin-top:10px;">目前掃描範圍內沒有發現簽到統計異常。</div>`}
-          <div class="panel-title" style="font-size:13px;margin-top:14px;">連續簽到排行</div>
-          ${(ov.topStreaks||[]).length?`<div class="table-scroll"><table class="rank-table"><thead><tr><th>玩家</th><th>目前</th><th>最高</th><th>累積</th></tr></thead><tbody>${ov.topStreaks.map(x=>`<tr><td>${esc(x.name)}${x.isTestData?'（測試）':''}</td><td>${Number(x.stats&&x.stats.currentCheckInStreak||0)}</td><td>${Number(x.stats&&x.stats.highestCheckInStreak||0)}</td><td>${Number(x.stats&&x.stats.totalCheckInDays||0)}</td></tr>`).join('')}</tbody></table></div>`:`<div class="empty-state">尚無簽到統計</div>`}`:""}
-      </div></details>
-      <details class="account-tools-card" style="margin-top:12px;"><summary><span>歷史賽事稱號補算</span><span class="hint">先預覽、再逐批執行⌄</span></summary><div class="account-tools-body">
-        <div class="banner warn"><span>只讀取既有天梯交易並核對正式積分賽；不改寫 tournaments。每批最多25筆，且只判定已開啟 retroactiveEnabled 的稱號。</span></div>
-        <div class="hint">目前游標：${engagementBackfillCursor?esc(engagementBackfillCursor):'從第一筆開始'}</div>
-        <div class="btn-row" style="margin-top:8px;"><button class="btn btn-ghost" data-action="admin-backfill-preview" ${engagementActionBusy||engagementBackfillDone?'disabled':''}>${engagementBackfillDone?'掃描已完成':'預覽下一批'}</button>${engagementBackfillResult&&(engagementBackfillResult.mode==='preview'||engagementBackfillResult.retryRequired)?`<button class="btn btn-primary" data-action="admin-backfill-execute" ${engagementActionBusy?'disabled':''}>執行這一批補算</button>`:""}${engagementBackfillDone?`<button class="btn btn-ghost" data-action="admin-backfill-restart">從頭重新掃描</button>`:""}</div>
-        ${summary?`<div class="grid grid-3" style="margin-top:10px;">${totals('掃描',summary.scanned)}${totals(engagementBackfillResult.mode==='preview'?'可補算':'已建立',engagementBackfillResult.mode==='preview'?summary.eligible:summary.created)}${totals('已處理統計',summary.processed)}${totals('本次補發稱號',summary.awarded)}${totals('跳過',summary.skipped)}${totals('失敗待重試',summary.failed)}</div><div class="hint" style="margin-top:8px;">${engagementBackfillResult.retryRequired?'本批有失敗，游標未前進；可按執行這一批補算重試。':engagementBackfillResult.done?'已到資料尾端。':'本批完成後可依新游標繼續下一批。'}</div>`:""}
-      </div></details>
-      ${renderTitleEditor()}
-      ${titleDefinitions.length?`<details class="account-tools-card" style="margin-top:12px;"><summary><span>稱號公開狀態管理</span><span class="hint">${titleDefinitions.length} 個定義⌄</span></summary><div class="account-tools-body">
-        ${titleDefinitions.map(t=>`<div class="community-event-card"><div><b>${esc(t.name||t.id)}</b> <span class="badge badge-metal">${esc(t.rarity||'common')}</span><div class="hint">${esc(t.id)}${t.isLimited?`｜限定 ${Number(t.maxRecipients||0)||'未設定'} 名`:''}｜${t.isHidden?'隱藏':'公開'}｜${t.isArchived?'已絕版':t.isActive?'啟用中':'停用中'}</div></div><div class="btn-row"><button class="btn btn-ghost btn-sm" data-action="admin-update-title-definition" data-title-id="${esc(t.id)}" data-field="isActive" data-active="${t.isActive?'1':'0'}" data-hidden="${t.isHidden?'1':'0'}" data-archived="${t.isArchived?'1':'0'}" ${engagementActionBusy||t.isArchived?'disabled':''}>${t.isActive?'停用':'啟用'}</button><button class="btn btn-ghost btn-sm" data-action="admin-update-title-definition" data-title-id="${esc(t.id)}" data-field="isHidden" data-active="${t.isActive?'1':'0'}" data-hidden="${t.isHidden?'1':'0'}" data-archived="${t.isArchived?'1':'0'}" ${engagementActionBusy?'disabled':''}>${t.isHidden?'改為公開':'設為隱藏'}</button><button class="btn btn-danger btn-sm" data-action="admin-update-title-definition" data-title-id="${esc(t.id)}" data-field="isArchived" data-active="${t.isActive?'1':'0'}" data-hidden="${t.isHidden?'1':'0'}" data-archived="${t.isArchived?'1':'0'}" ${engagementActionBusy?'disabled':''}>${t.isArchived?'取消絕版':'標記絕版'}</button></div></div>`).join('')}
-      </div></details>`:""}
-      <details class="account-tools-card" style="margin-top:12px;"><summary><span>人工授予／撤銷</span><span class="hint">所有操作留下紀錄⌄</span></summary><div class="account-tools-body">
-        <div class="grid grid-2 account-management-form-grid">
-          <div class="field"><label>玩家 UID</label><input id="engagement-target-uid" placeholder="Firebase UID"></div>
-          <div class="field"><label>稱號</label><select id="engagement-title-id"><option value="">請選擇</option>${grantCatalog.map(t=>`<option value="${esc(t.id)}">${esc(t.name)}｜${esc(t.id)}</option>`).join("")}</select></div>
-          <div class="field" style="grid-column:1/-1"><label>操作原因</label><input id="engagement-title-reason" maxlength="120" placeholder="必填，例如：封測人工授予"></div>
-        </div>
-        <div class="btn-row"><button class="btn btn-primary" data-action="admin-grant-title" ${engagementActionBusy?'disabled':''}>人工授予</button><button class="btn btn-danger-solid" data-action="admin-revoke-title" ${engagementActionBusy?'disabled':''}>撤銷稱號</button></div>
-      </div></details>
+      <div class="btn-row"><button class="btn btn-ghost" data-action="admin-seed-initial-titles" ${engagementActionBusy?'disabled':''}>建立／同步第一批稱號</button><button class="btn btn-primary" data-action="admin-save-engagement-settings" ${engagementActionBusy?'disabled':''}>儲存稱號設定</button></div>
     </div>
-  </details>`;
+
+    <details class="account-tools-card" style="margin-top:14px;"><summary><span>歷史賽事稱號補算</span><span class="hint">先預覽、再逐批執行⌄</span></summary><div class="account-tools-body">
+      <div class="banner warn"><span>只讀取既有天梯交易並核對正式積分賽；不改寫 tournaments。每批最多25筆，且只判定已開啟 retroactiveEnabled 的稱號。</span></div>
+      <div class="hint">目前游標：${engagementBackfillCursor?esc(engagementBackfillCursor):'從第一筆開始'}</div>
+      <div class="btn-row" style="margin-top:8px;"><button class="btn btn-ghost" data-action="admin-backfill-preview" ${engagementActionBusy||engagementBackfillDone?'disabled':''}>${engagementBackfillDone?'掃描已完成':'預覽下一批'}</button>${engagementBackfillResult&&(engagementBackfillResult.mode==='preview'||engagementBackfillResult.retryRequired)?`<button class="btn btn-primary" data-action="admin-backfill-execute" ${engagementActionBusy?'disabled':''}>執行這一批補算</button>`:""}${engagementBackfillDone?`<button class="btn btn-ghost" data-action="admin-backfill-restart">從頭重新掃描</button>`:""}</div>
+      ${summary?`<div class="grid grid-3" style="margin-top:10px;">${totals('掃描',summary.scanned)}${totals(engagementBackfillResult.mode==='preview'?'可補算':'已建立',engagementBackfillResult.mode==='preview'?summary.eligible:summary.created)}${totals('已處理統計',summary.processed)}${totals('本次補發稱號',summary.awarded)}${totals('跳過',summary.skipped)}${totals('失敗待重試',summary.failed)}</div><div class="hint" style="margin-top:8px;">${engagementBackfillResult.retryRequired?'本批有失敗，游標未前進；可按執行這一批補算重試。':engagementBackfillResult.done?'已到資料尾端。':'本批完成後可依新游標繼續下一批。'}</div>`:""}
+    </div></details>
+    ${renderTitleEditor()}
+    ${titleDefinitions.length?`<details class="account-tools-card" style="margin-top:12px;"><summary><span>稱號公開狀態管理</span><span class="hint">${titleDefinitions.length} 個定義⌄</span></summary><div class="account-tools-body">
+      ${titleDefinitions.map(t=>`<div class="community-event-card"><div><b>${esc(t.name||t.id)}</b> <span class="rarity-badge rarity-${esc(t.rarity||'common')}">${esc(titleRarityLabel(t.rarity))}</span><div class="hint">${esc(t.id)}${t.isLimited?`｜限定 ${Number(t.maxRecipients||0)||'未設定'} 名`:''}｜${t.isHidden?'隱藏':'公開'}｜${t.isArchived?'已絕版':t.isActive?'啟用中':'停用中'}</div></div><div class="btn-row"><button class="btn btn-ghost btn-sm" data-action="admin-update-title-definition" data-title-id="${esc(t.id)}" data-field="isActive" data-active="${t.isActive?'1':'0'}" data-hidden="${t.isHidden?'1':'0'}" data-archived="${t.isArchived?'1':'0'}" ${engagementActionBusy||t.isArchived?'disabled':''}>${t.isActive?'停用':'啟用'}</button><button class="btn btn-ghost btn-sm" data-action="admin-update-title-definition" data-title-id="${esc(t.id)}" data-field="isHidden" data-active="${t.isActive?'1':'0'}" data-hidden="${t.isHidden?'1':'0'}" data-archived="${t.isArchived?'1':'0'}" ${engagementActionBusy?'disabled':''}>${t.isHidden?'改為公開':'設為隱藏'}</button><button class="btn btn-danger btn-sm" data-action="admin-update-title-definition" data-title-id="${esc(t.id)}" data-field="isArchived" data-active="${t.isActive?'1':'0'}" data-hidden="${t.isHidden?'1':'0'}" data-archived="${t.isArchived?'1':'0'}" ${engagementActionBusy?'disabled':''}>${t.isArchived?'取消絕版':'標記絕版'}</button></div></div>`).join('')}
+    </div></details>`:""}
+    <details class="account-tools-card" style="margin-top:12px;"><summary><span>人工授予／撤銷</span><span class="hint">所有操作留下紀錄⌄</span></summary><div class="account-tools-body">
+      <div class="grid grid-2 account-management-form-grid">
+        <div class="field"><label>玩家 UID</label><input id="engagement-target-uid" placeholder="Firebase UID"></div>
+        <div class="field"><label>稱號</label><select id="engagement-title-id"><option value="">請選擇</option>${grantCatalog.map(t=>`<option value="${esc(t.id)}">${esc(t.name)}｜${esc(titleRarityLabel(t.rarity))}｜${esc(t.id)}</option>`).join("")}</select></div>
+        <div class="field" style="grid-column:1/-1"><label>操作原因</label><input id="engagement-title-reason" maxlength="120" placeholder="必填，例如：封測人工授予"></div>
+      </div>
+      <div class="btn-row"><button class="btn btn-primary" data-action="admin-grant-title" ${engagementActionBusy?'disabled':''}>人工授予</button><button class="btn btn-danger-solid" data-action="admin-revoke-title" ${engagementActionBusy?'disabled':''}>撤銷稱號</button></div>
+    </div></details>
+  </section>`;
 }
 
 let accountBatch={key:'',selected:new Set(),busy:false,result:null,error:''};
@@ -10760,14 +10826,15 @@ function managedFeatureError(e){
 let titleEditorState={uid:'',draft:null,preview:null,busy:false,message:''};
 function titleEditorContext(){
  const uid=currentAuthUid();if(titleEditorState.uid!==uid)titleEditorState={uid,draft:null,preview:null,busy:false,message:''};
- if(!titleEditorState.draft)titleEditorState.draft={titleId:'custom_'+crypto.randomUUID(),create:true,name:'',description:'',conditionType:'manual',targetValue:1,isActive:true,isHidden:false,isArchived:false};return titleEditorState;
+ if(!titleEditorState.draft)titleEditorState.draft={titleId:'custom_'+crypto.randomUUID(),create:true,name:'',description:'',conditionType:'manual',targetValue:1,rarity:'common',isActive:true,isHidden:false,isArchived:false};return titleEditorState;
 }
 function renderTitleEditor(){
  if(!isSuperAdmin())return '';const c=titleEditorContext(),d=c.draft,defs=engagementAdminOverview?.definitions||[];
- return `<details class="account-tools-card"><summary><span>新增／編輯稱號與開拓者發放</span></summary><div class="account-tools-body">
- <div class="hint">條件由系統選單與數值執行；說明文字不會當作程式。身分頭銜透過下方人工授予，依 UID 指定。</div>
- <button class="btn btn-ghost" data-action="title-editor-load" ${c.busy?'disabled':''}>載入／重新載入稱號</button><label>選擇稱號<select id="title-editor-select"><option value="">新增稱號</option>${defs.map(t=>`<option value="${esc(t.id)}" ${d.titleId===t.id?'selected':''}>${esc(t.name||t.id)}</option>`).join('')}</select></label>
+ return `<details class="account-tools-card" ${c.busy||c.message?'open':''}><summary><span>新增／編輯稱號與開拓者發放</span></summary><div class="account-tools-body">
+ <div class="hint">條件由系統選單與數值執行；說明文字不會當作程式。人工授予型稱號透過下方「人工授予／撤銷」依玩家 UID 指定。</div>
+ <div class="btn-row"><button class="btn btn-ghost" data-action="title-editor-load" ${c.busy?'disabled':''}>載入／重新載入稱號</button><button class="btn btn-ghost" data-action="title-editor-preset-creator" ${c.busy?'disabled':''}>載入「創世者」範本</button></div><label>選擇稱號<select id="title-editor-select"><option value="">新增稱號</option>${defs.map(t=>`<option value="${esc(t.id)}" ${d.titleId===t.id?'selected':''}>${esc(t.name||t.id)}</option>`).join('')}</select></label>
  <div class="field"><label>稱號名稱</label><input id="title-editor-name" maxlength="60" value="${esc(d.name)}"></div>
+ <div class="field"><label>稀有度／視覺等級</label><select id="title-editor-rarity">${Object.entries({common:'一般',rare:'稀有',epic:'史詩',legendary:'傳說',limited:'限定',eternal:'永恆'}).map(([k,v])=>`<option value="${k}" ${(d.rarity||'common')===k?'selected':''}>${v}｜${k}</option>`).join('')}</select><div class="hint">稀有度會同步決定玩家端稱號顏色、徽章與圖鑑卡片樣式。</div></div>
  <div class="field"><label>達成條件</label><select id="title-editor-condition">${Object.entries({manual:'指定 UID 人工授予',hosted_tournaments:'成功完成主辦場數',completed_tournaments:'正式賽事完成場數',championships:'正式賽事冠軍次數',best_placement:'正式賽事名次不大於',total_checkins:'正式累積簽到天數',checkin_streak:'正式連續簽到天數',...(d.titleId==='pioneer'?{pioneer_quota:'開拓者累計100人名額'}:{})}).map(([k,v])=>`<option value="${k}" ${d.conditionType===k?'selected':''}>${v}</option>`).join('')}</select></div>
  <div class="field"><label>門檻數值（人工授予填1）</label><input id="title-editor-target" type="number" min="1" max="100000" value="${Number(d.targetValue)||1}"></div>
  <div class="field"><label>說明</label><textarea id="title-editor-description" maxlength="500">${esc(d.description||'')}</textarea></div>
@@ -10785,17 +10852,23 @@ function bindTitleEditor(){
   if(c.busy)return;const t=(engagementAdminOverview?.definitions||[]).find(t=>t.id===e.target.value);
   c.draft=t?{...t,titleId:t.id,create:false,expectedVersion:t.version||1}:null;render();
  });
- for(const [id,key,type] of [['name','name','text'],['description','description','text'],['condition','conditionType','text'],['target','targetValue','number'],['active','isActive','boolean']]){
+ for(const [id,key,type] of [['name','name','text'],['rarity','rarity','text'],['description','description','text'],['condition','conditionType','text'],['target','targetValue','number'],['active','isActive','boolean']]){
   document.getElementById('title-editor-'+id)?.addEventListener('input',e=>{c.draft[key]=type==='boolean'?e.target.checked:type==='number'?Number(e.target.value):e.target.value;});
  }
 }
 async function handleTitleEditor(action){
  if(!isSuperAdmin())return;const c=titleEditorContext();if(c.busy)return;const uid=currentAuthUid();
+ if(action==='title-editor-preset-creator'){
+  const existing=(engagementAdminOverview?.definitions||[]).find(t=>t.id==='creator');
+  c.draft={...(existing||{}),titleId:'creator',create:!existing,expectedVersion:existing?(existing.version||1):undefined,name:'創世者',description:'BXH ARENA 創建者榮譽稱號。',conditionType:'manual',targetValue:1,rarity:'eternal',isActive:true,isHidden:false,isArchived:false};
+  c.preview=null;c.message=existing?'已載入既有「創世者」並套用「永恆」等級。確認後按「儲存稱號」即可更新。':'已載入「創世者｜永恆」範本。確認內容後按「儲存稱號」，再到下方人工授予給指定玩家 UID。';render();return;
+ }
  if(action==='title-editor-save'){
-  for(const [id,key,type] of [['name','name','text'],['description','description','text'],['condition','conditionType','text'],['target','targetValue','number'],['active','isActive','boolean']]){
+  for(const [id,key,type] of [['name','name','text'],['rarity','rarity','text'],['description','description','text'],['condition','conditionType','text'],['target','targetValue','number'],['active','isActive','boolean']]){
    const el=document.getElementById('title-editor-'+id);if(el)c.draft[key]=type==='boolean'?el.checked:type==='number'?Number(el.value):el.value;
   }
  }
+ if(action==='title-editor-save'&&!confirm(`確定要儲存稱號「${c.draft.name||'未命名稱號'}」的設定嗎？`))return;
  if(action==='title-editor-delete'&&!confirm('確定刪除此稱號？已有發放紀錄會改為停用封存，保留玩家歷史。'))return;
  if(action==='title-pioneer-execute'&&(!c.preview||!confirm(`確認發放開拓者給預覽的 ${c.preview.candidates.length} 人？`)))return;
  c.busy=true;c.message='';const payload={...c.draft};render();
@@ -10812,6 +10885,7 @@ async function handleTitleEditor(action){
    if(!saved||saved.ok!==true)throw new Error('title-save-unconfirmed');
    c.draft={...payload,create:false,expectedVersion:Number(payload.expectedVersion||0)+1};
    c.message='稱號已儲存。人工授予型稱號請至下方指定 UID 發放。';
+   showToast(`稱號「${payload.name||saved.titleId||'未命名稱號'}」已儲存`);
    try{
     const overview=await window.engagementService.getAdminOverview();if(uid!==currentAuthUid())return;
     if(!overview||overview.ok!==true||!Array.isArray(overview.definitions))throw new Error('title-overview-invalid');
@@ -10825,11 +10899,12 @@ async function handleTitleEditor(action){
    const result=await window.engagementService.executePioneerAwards({previewId:c.preview.previewId});if(uid!==currentAuthUid())return;
    c.message=`本批已處理：新發放 ${result.results.filter(x=>x.awarded).length} 人，其餘已領取、資格變更或額度已滿。`;c.preview=null;
   }
- }catch(e){if(uid===currentAuthUid())c.message=managedFeatureError(e);}
+ }catch(e){if(uid===currentAuthUid()){c.message=managedFeatureError(e);showToast(c.message,true);}}
  finally{if(uid===currentAuthUid()){c.busy=false;render();}}
 }
 
 function renderAccountManagementScreen(){
+  const page=["accounts","checkin","titles"].includes(superAdminManagementPage)?superAdminManagementPage:"accounts";
   const loading=accountMgmtUsers===null;
   const users=accountMgmtUsers||[];
   const activity=accountActivitySummary(users);
@@ -10839,10 +10914,10 @@ function renderAccountManagementScreen(){
       <div class="brandtext"><span class="t1"><span class="w-bxh">BXH</span><span class="w-arena">ARENA</span></span><span class="t2">戰鬥陀螺賽事系統 <small style="opacity:.55;font-size:9px;">${APP_VERSION}</small></span>${topbarConnectionRailHtml()}</div>
       <div class="spacer"></div>
       ${accountMenuHtml()}
-    </header></div>
+    </header>${renderSuperAdminManagementTabs(page)}</div>
     ${accountMenuOverlayHtml()}
     <main class="account-management-main">
-      <div class="panel account-management-panel">
+      ${page==="accounts"?`<div class="panel account-management-panel">
         <div class="panel-title">帳號管理<button class="btn btn-ghost btn-sm" data-action="account-goto-home">返回系統首頁</button></div>
         <p class="hint">摘要優先顯示姓名、帳號分類與活躍度；點擊個別帳號即可展開角色、狀態及完整資料。</p>
         ${authFormError ? `<div class="auth-error">${esc(authFormError)}</div>` : ""}
@@ -10910,9 +10985,9 @@ function renderAccountManagementScreen(){
           <button class="btn btn-primary" data-action="create-managed-user-submit" ${accountMgmtBusy?'disabled':''}>${accountMgmtBusy?'處理中……':'建立帳號'}</button>
           </div>
         </details>
-      </div>
-      ${safeEngagementRender(renderEngagementAdminPanel)}
-      <details class="panel account-tools-card">
+      </div>`:""}
+      ${page==="checkin"?safeEngagementRender(renderCheckInManagementPanel):page==="titles"?safeEngagementRender(renderTitleManagementPanel):""}
+      ${page==="accounts"?`<details class="panel account-tools-card">
         <summary><span>公開賽事資料清理</span><span class="hint">進階工具⌄</span></summary>
         <div class="account-tools-body">
         <p class="hint">重建 publicTournaments 集合中每份文件的公開安全欄位，移除舊版可能殘留的完整私人資料（data）與工作人員名單（assignedStaffUids）。不會刪除任何賽事，不會變更文件 ID 或賽事代碼，可重複執行。</p>
@@ -10923,7 +10998,7 @@ function renderAccountManagementScreen(){
           <button class="btn btn-primary" data-action="run-cleanup-public-mirrors" ${legacyCleanupBusy?'disabled':''}>${legacyCleanupBusy?'清理中……':'執行清理'}</button>
         </div>
         </div>
-      </details>
+      </details>`:""}
     </main>
     ${renderModal()}
   </div>`;
@@ -11249,9 +11324,9 @@ async function loadLadderAdminLogs(force=false){
 async function loadPlayerBadges(snapshot){if(!window.cloudSync?.getPlayerBadges)return;try{for(let i=0;i<snapshot.players.length;i+=50){const chunk=snapshot.players.slice(i,i+50);const r=await window.cloudSync.getPlayerBadges(chunk.map(p=>p.uid));if(ladderPublicData!==snapshot)return;for(const p of chunk)p.equippedBadge=r.badges?.[p.uid]||null;render();}}catch(e){console.warn('[player badges]',e.code);}}
 let playerCardsUI={uid:'',query:'',results:null,settings:null,busy:false,error:'',card:null,opened:false,hasMore:false};
 function cardContext(){const uid=currentAuthUid();if(playerCardsUI.uid!==uid)playerCardsUI={uid,query:'',results:null,settings:null,busy:false,error:'',card:null,opened:false,hasMore:false};return playerCardsUI;}
-function playerSearchPanel(){const c=cardContext();return `<details class="panel"><summary style="font-weight:bold;cursor:pointer">尋找玩家</summary><div style="margin-top:14px"><div class="field"><label>玩家名稱或玩家 ID</label><input id="player-card-query" maxlength="60" placeholder="輸入至少 2 個字" value="${esc(c.query)}"></div><button class="btn btn-primary" data-action="card-search" ${c.busy?'disabled':''}>${c.busy?'處理中…':'搜尋'}</button><p class="hint">只搜尋允許被找到的玩家。可輸入部分遊戲名稱或玩家 ID。</p>${c.error?`<p role="status">${esc(c.error)}</p>`:''}${c.results===null?'':c.results.length?c.results.map(p=>`<div class="community-event-card"><button class="btn btn-ghost" data-action="card-open" data-uid="${esc(p.uid)}">${esc(p.name)}${p.title?` <span class="badge badge-metal">${esc(p.title.name)}</span>`:''}</button><div class="hint">${esc(p.playerId)}</div></div>`).join(''):'<p>找不到符合條件且允許搜尋的玩家。</p>'}${c.hasMore?'<p class="hint">最多顯示 30 名，請輸入更完整的名稱或 ID。</p>':''}</div></details>`;}
+function playerSearchPanel(){const c=cardContext();return `<details class="panel"><summary style="font-weight:bold;cursor:pointer">尋找玩家</summary><div style="margin-top:14px"><div class="field"><label>玩家名稱或玩家 ID</label><input id="player-card-query" maxlength="60" placeholder="輸入至少 2 個字" value="${esc(c.query)}"></div><button class="btn btn-primary" data-action="card-search" ${c.busy?'disabled':''}>${c.busy?'處理中…':'搜尋'}</button><p class="hint">只搜尋允許被找到的玩家。可輸入部分遊戲名稱或玩家 ID。</p>${c.error?`<p role="status">${esc(c.error)}</p>`:''}${c.results===null?'':c.results.length?c.results.map(p=>`<div class="community-event-card"><button class="btn btn-ghost" data-action="card-open" data-uid="${esc(p.uid)}">${esc(p.name)}${p.title?` <span class="title-chip rarity-${esc(p.title.rarity||'common')}">${esc(p.title.name)}</span>`:''}</button><div class="hint">${esc(p.playerId)}</div></div>`).join(''):'<p>找不到符合條件且允許搜尋的玩家。</p>'}${c.hasMore?'<p class="hint">最多顯示 30 名，請輸入更完整的名稱或 ID。</p>':''}</div></details>`;}
 function playerPrivacyPanel(){const c=cardContext(),labels={cardPublic:'公開玩家名片',searchable:'允許被搜尋',showTitle:'公開佩戴稱號（包含天梯）',showAvatar:'公開名片頭像',showPoints:'公開名片積分與階級',showStats:'公開名片勝率與參賽統計'};return `<div class="panel"><div class="panel-title">公開與隱私</div><p class="hint">新功能預設不公開名片、不允許搜尋。名片不含本名、Email、電話、生日。天梯原有排名、名稱及積分仍依排行榜規則顯示；既有賽事頁與頭像不受此設定追溯隱藏。</p>${c.settings?Object.entries(labels).map(([k,v])=>`<label style="display:flex;gap:10px;align-items:center;margin:12px 0"><input type="checkbox" data-card-privacy="${k}" ${c.settings[k]?'checked':''} ${c.busy?'disabled':''}>${v}</label>`).join(''):'<p class="hint">先載入目前設定，再選擇公開項目。</p>'}<div class="btn-row"><button class="btn btn-ghost" data-action="card-settings" ${c.busy?'disabled':''}>載入設定</button>${c.settings?`<button class="btn btn-primary" data-action="card-save" ${c.busy?'disabled':''}>儲存公開設定</button>`:''}<button class="btn btn-ghost" data-action="card-preview" ${c.busy?'disabled':''}>預覽已儲存名片</button></div>${c.error?`<p role="status">${esc(c.error)}</p>`:''}</div>`;}
-function renderPlayerCardOverlay(){const c=cardContext();let el=document.getElementById('player-card-overlay');if(!c.opened){el?.remove();return;}if(!el){el=document.createElement('div');el.id='player-card-overlay';document.body.appendChild(el);}el.style.cssText='position:fixed;inset:0;z-index:2200;background:#000b;display:flex;align-items:center;justify-content:center;padding:18px';const p=c.card;el.innerHTML=`<section role="dialog" aria-modal="true" aria-label="玩家名片" class="panel" style="width:100%;max-width:520px;max-height:85dvh;overflow:auto;margin:0"><div class="panel-title">玩家名片</div>${c.busy?'<p>讀取中…</p>':c.error?`<p>${esc(c.error)}</p>`:!p?'<p>此玩家未公開名片，或目前無法查看。</p>':`${p.avatarUrl?`<img src="${esc(p.avatarUrl)}" alt="玩家頭像" style="width:72px;height:72px;border-radius:50%;object-fit:cover">`:''}<h2>${esc(p.name)}</h2><p>${esc(p.playerId)}</p>${p.title?`<p class="badge badge-metal">${esc(p.title.name)}</p>`:''}${p.points?`<p>${esc(p.points.season)}｜${esc(p.points.rankTier)}</p><p>賽季 ${p.points.seasonPoints} PT · 生涯 ${p.points.careerPoints} PT</p>`:''}${p.stats?`<hr><p>${esc(p.stats.season)} 正式積分賽</p><p>勝率 ${p.stats.winRate===null?'尚無紀錄':p.stats.winRate+'%'}｜${p.stats.wins} 勝 ${p.stats.losses} 敗</p><p>完成 ${p.stats.events} 場｜冠軍 ${p.stats.champion} · 亞軍 ${p.stats.runnerUp} · 季軍 ${p.stats.third} · 殿軍 ${p.stats.fourth}</p><p class="hint">僅計入正常結算且仍有完整對戰資料的本季積分賽；輪空、棄權不計勝敗。${p.stats.incomplete?'部分歷史資料不完整，未納入以上統計。':''}</p>`:''}`}
+function renderPlayerCardOverlay(){const c=cardContext();let el=document.getElementById('player-card-overlay');if(!c.opened){el?.remove();return;}if(!el){el=document.createElement('div');el.id='player-card-overlay';document.body.appendChild(el);}el.style.cssText='position:fixed;inset:0;z-index:2200;background:#000b;display:flex;align-items:center;justify-content:center;padding:18px';const p=c.card;el.innerHTML=`<section role="dialog" aria-modal="true" aria-label="玩家名片" class="panel" style="width:100%;max-width:520px;max-height:85dvh;overflow:auto;margin:0"><div class="panel-title">玩家名片</div>${c.busy?'<p>讀取中…</p>':c.error?`<p>${esc(c.error)}</p>`:!p?'<p>此玩家未公開名片，或目前無法查看。</p>':`${p.avatarUrl?`<img src="${esc(p.avatarUrl)}" alt="玩家頭像" style="width:72px;height:72px;border-radius:50%;object-fit:cover">`:''}<h2>${esc(p.name)}</h2><p>${esc(p.playerId)}</p>${p.title?`<p class="title-chip rarity-${esc(p.title.rarity||'common')}">${esc(p.title.name)}</p>`:''}${p.points?`<p>${esc(p.points.season)}｜${esc(p.points.rankTier)}</p><p>賽季 ${p.points.seasonPoints} PT · 生涯 ${p.points.careerPoints} PT</p>`:''}${p.stats?`<hr><p>${esc(p.stats.season)} 正式積分賽</p><p>勝率 ${p.stats.winRate===null?'尚無紀錄':p.stats.winRate+'%'}｜${p.stats.wins} 勝 ${p.stats.losses} 敗</p><p>完成 ${p.stats.events} 場｜冠軍 ${p.stats.champion} · 亞軍 ${p.stats.runnerUp} · 季軍 ${p.stats.third} · 殿軍 ${p.stats.fourth}</p><p class="hint">僅計入正常結算且仍有完整對戰資料的本季積分賽；輪空、棄權不計勝敗。${p.stats.incomplete?'部分歷史資料不完整，未納入以上統計。':''}</p>`:''}`}
 <button class="btn btn-ghost" data-action="card-close" style="width:100%;margin-top:14px">返回</button></section>`;el.onclick=e=>{if(e.target===el||e.target.closest('[data-action="card-close"]')){c.opened=false;el.remove();}};}
 async function handlePlayerCard(action,button){const c=cardContext();if(c.busy&&action!=='card-close')return;if(action==='card-close'){c.opened=false;renderPlayerCardOverlay();return;}if(!currentAuthUid()){showToast('請先登入以使用玩家搜尋與名片',true);return;}const uid=c.uid;c.error='';let data={};if(action==='card-search'){c.query=document.getElementById('player-card-query')?.value||c.query;data={action:'search',query:c.query};}else if(action==='card-settings')data={action:'settings'};else if(action==='card-save'){data={action:'save',settings:c.settings};}else if(action==='card-open'||action==='card-preview'){data={action:action==='card-preview'?'preview':'card',uid:button?.getAttribute('data-uid')};c.card=null;c.opened=true;}else return;c.busy=true;render();try{const r=await window.engagementService.playerCard(data);if(uid!==currentAuthUid())return;if(!r?.ok)throw Error('服務未確認完成');if(data.action==='search'){c.results=r.players;c.hasMore=r.hasMore;}if(['settings','save'].includes(data.action)){c.settings=r.settings;if(data.action==='save'){showToast('公開設定已儲存');ladderPublicLoaded=false;}}if(['preview','card'].includes(data.action))c.card=r.card;}catch(e){if(uid===currentAuthUid())c.error=managedFeatureError(e);}finally{if(uid===currentAuthUid()){c.busy=false;render();}}}
 function bindPlayerCardInputs(){document.querySelectorAll('[data-card-privacy]').forEach(el=>{el.onchange=()=>{const c=cardContext();if(c.settings){c.settings[el.dataset.cardPrivacy]=el.checked;if(el.dataset.cardPrivacy==='cardPublic'&&!el.checked){c.settings.searchable=false;const b=document.querySelector('[data-card-privacy="searchable"]');if(b)b.checked=false;}}};});const q=document.getElementById('player-card-query');if(q){q.oninput=()=>cardContext().query=q.value;q.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();handlePlayerCard('card-search');}};}}
@@ -11262,7 +11337,7 @@ function ladderLeaderboardTable(rows, adminMode=false){
     <thead><tr><th>排名</th><th>玩家姓名</th><th>目前階級</th><th>賽季積分</th><th>生涯積分</th><th>參賽場次</th><th>冠軍</th>${adminMode?'<th>管理</th>':''}</tr></thead>
     <tbody>${rows.map(p=>`<tr>
       <td class="rank-num">NO.${p.__rank}</td>
-      <td class="rank-name"><button class="btn btn-ghost btn-sm" data-action="card-open" data-uid="${esc(p.uid)}">${esc(p.playerName||p.publicName||"—")}</button>${p.equippedBadge?`<span class="badge badge-metal" style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle" title="${esc(p.equippedBadge.name)}">${esc(p.equippedBadge.name)}</span>`:""}</td>
+      <td class="rank-name"><button class="btn btn-ghost btn-sm" data-action="card-open" data-uid="${esc(p.uid)}">${esc(p.playerName||p.publicName||"—")}</button>${p.equippedBadge?`<span class="title-chip rarity-${esc(p.equippedBadge.rarity||'common')}" style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle" title="${esc(p.equippedBadge.name)}">${esc(p.equippedBadge.name)}</span>`:""}</td>
       <td><span class="badge badge-metal ladder-tier-${LADDER_TIER_INDEX[p.rankTier]||0}">${esc(p.rankTier||ladderTierFromPoints(p.seasonPoints))}</span></td>
       <td><strong>${Number(p.seasonPoints||0)} PT</strong></td>
       <td>${Number(p.careerPoints||0)} PT</td>
@@ -15458,6 +15533,7 @@ function handleAction(action, target){
     return;
   }
   if(action==="toggle-account-menu"){ accountMenuOpen=!accountMenuOpen; render(); return; }
+  if(action==="super-admin-page"){ const page=target.getAttribute("data-page"); if(["accounts","checkin","titles"].includes(page)){ superAdminManagementPage=page; accountMenuOpen=false; render(); } return; }
   if(action==="account-goto-home"){ accountMenuOpen=false; appPhase="app"; activeTab="live"; render(); return; }
   if(action==="account-change-password"){ accountMenuOpen=false; authFormError=""; appPhase="admin-change-password"; render(); return; }
   if(action==="account-role-filter"){
@@ -15535,7 +15611,7 @@ function handleAction(action, target){
   }
   if(action==="admin-save-engagement-settings"){
     if(engagementActionBusy || !window.engagementService) return;
-    const payload={titlesEnabled:!!document.getElementById("engagement-titles-enabled")?.checked,dailyCheckInEnabled:!!document.getElementById("engagement-checkin-enabled")?.checked,automaticTitleAwardsEnabled:!!document.getElementById("engagement-auto-awards")?.checked,checkInTitleAwardsEnabled:!!document.getElementById("engagement-checkin-awards")?.checked};
+    const current=engagementSettings(); const field=(id,key)=>{const el=document.getElementById(id);return el?!!el.checked:!!current[key];}; const payload={titlesEnabled:field("engagement-titles-enabled","titlesEnabled"),dailyCheckInEnabled:field("engagement-checkin-enabled","dailyCheckInEnabled"),automaticTitleAwardsEnabled:field("engagement-auto-awards","automaticTitleAwardsEnabled"),checkInTitleAwardsEnabled:field("engagement-checkin-awards","checkInTitleAwardsEnabled")};
     const actionEpoch=engagementSessionEpoch;
     engagementActionBusy=true; render();
     Promise.resolve().then(async()=>{if(actionEpoch!==engagementSessionEpoch) return;try{const result=await window.engagementService.saveSettings(payload);if(!result||result.ok!==true) throw new Error("settings-failed");engagementSnapshot=null;showToast("稱號與簽到功能開關已儲存");requestEngagementSnapshot(true);}catch(err){if(actionEpoch!==engagementSessionEpoch) return;console.warn("[BXH engagement settings]",err);showToast("功能開關儲存失敗",true);}finally{if(actionEpoch!==engagementSessionEpoch) return;engagementActionBusy=false;render();}}); return;
@@ -15553,6 +15629,7 @@ function handleAction(action, target){
   if(action==="open-account-management"){
     accountMenuOpen=false; authFormError="";
     appPhase="account-management";
+    superAdminManagementPage="accounts";
     accountMgmtUsers = null;
     accountMgmtRoleFilter="all";
     accountMgmtStatusFilter="all";
