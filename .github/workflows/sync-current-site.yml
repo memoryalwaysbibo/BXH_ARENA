@@ -1,0 +1,33 @@
+name: Sync current BXH ARENA frontend
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/sync-current-site.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout target repo
+        uses: actions/checkout@v4
+
+      - name: Copy latest frontend from current repo
+        run: |
+          curl -fL "https://raw.githubusercontent.com/memoryalwaysbibo/BXH_ARENA_v13.29.10_admin_pages_split/main/index.html" -o index.html
+
+      - name: Commit synced frontend
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "index.html is already identical; nothing to commit."
+            exit 0
+          fi
+          git commit -m "Sync latest BXH ARENA frontend"
+          git push
