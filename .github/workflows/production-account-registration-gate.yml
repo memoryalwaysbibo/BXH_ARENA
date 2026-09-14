@@ -1,0 +1,125 @@
+name: Production Account Registration Gate
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/production-account-registration-gate.yml'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Production account registration mode'
+        required: true
+        type: choice
+        options:
+          - lock
+          - unlock
+        default: lock
+
+permissions:
+  contents: write
+
+env:
+  # Change only this value to unlock/lock by commit. workflow_dispatch can also override it.
+  DEFAULT_MODE: lock
+
+jobs:
+  registration-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout production repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply reversible registration gate
+        shell: python
+        env:
+          DISPATCH_MODE: ${{ github.event.inputs.mode }}
+        run: |
+          from pathlib import Path
+          import os, re
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          mode = (os.environ.get('DISPATCH_MODE') or os.environ.get('DEFAULT_MODE') or 'lock').strip().lower()
+          if mode not in {'lock','unlock'}:
+              raise SystemExit(f'Invalid mode: {mode}')
+          is_open = mode == 'unlock'
+          flag = 'true' if is_open else 'false'
+
+          # One global switch. This is intentionally easy to reverse later.
+          marker_re = re.compile(r'<script id="bxh-production-registration-gate">.*?</script>\s*<style id="bxh-production-registration-gate-style">.*?</style>', re.S)
+          marker = f'''<script id="bxh-production-registration-gate">window.BXH_PRODUCTION_REGISTRATION_OPEN = {flag};</script>\n<style id="bxh-production-registration-gate-style">\nbody:not(.bxh-registration-open) [data-action="player-goto-apply"]{{display:none!important}}\n</style>'''
+          if marker_re.search(s):
+              s = marker_re.sub(marker, s, count=1)
+          else:
+              anchor = '</head>'
+              if anchor not in s: raise SystemExit('Missing </head>')
+              s = s.replace(anchor, marker + '\n' + anchor, 1)
+
+          # Make the CSS state explicit at runtime.
+          body_state = '''<script id="bxh-production-registration-body-state">\n(function(){\n  function sync(){ if(document.body) document.body.classList.toggle('bxh-registration-open', window.BXH_PRODUCTION_REGISTRATION_OPEN === true); }\n  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', sync, {once:true}); else sync();\n})();\n</script>'''
+          body_re = re.compile(r'<script id="bxh-production-registration-body-state">.*?</script>', re.S)
+          if body_re.search(s): s = body_re.sub(body_state, s, count=1)
+          else: s = s.replace('</body>', body_state + '\n</body>', 1)
+
+          # Direct/deep-link guard: hiding the button is not the security boundary.
+          old = 'if(action==="player-goto-apply"){ playerApplyError=""; appPhase="player-apply"; render(); return; }'
+          new = 'if(action==="player-goto-apply"){ if(window.BXH_PRODUCTION_REGISTRATION_OPEN!==true){ showToast("正式站目前暫停新帳號申請，請使用官方 FINAL BETA 測試入口",true); return; } playerApplyError=""; appPhase="player-apply"; render(); return; }'
+          if old in s: s = s.replace(old, new)
+          elif new not in s: raise SystemExit('player-goto-apply guard anchor not found')
+
+          # Email/password creation guard at the service method itself.
+          old = 'async applyPlayerAccount({ email, password, realName, nickname, phone }){\n      if(!authReady) return { ok:false, error:"雲端服務尚未就緒" };'
+          new = 'async applyPlayerAccount({ email, password, realName, nickname, phone }){\n      if(window.BXH_PRODUCTION_REGISTRATION_OPEN!==true) return { ok:false, error:"正式站目前暫停新帳號申請，請使用官方 FINAL BETA 測試入口" };\n      if(!authReady) return { ok:false, error:"雲端服務尚未就緒" };'
+          if old in s: s = s.replace(old, new, 1)
+          elif new not in s: raise SystemExit('applyPlayerAccount guard anchor not found')
+
+          # Google first-time profile creation guard. Existing Google users with users/{uid} remain able to log in.
+          old = 'async completePlayerProfile(uid, { email, realName, nickname, phone }){\n      if(!authReady) return { ok:false, error:"雲端服務尚未就緒" };'
+          new = 'async completePlayerProfile(uid, { email, realName, nickname, phone }){\n      if(window.BXH_PRODUCTION_REGISTRATION_OPEN!==true) return { ok:false, error:"正式站目前暫停新帳號申請，請使用官方 FINAL BETA 測試入口" };\n      if(!authReady) return { ok:false, error:"雲端服務尚未就緒" };'
+          if old in s: s = s.replace(old, new, 1)
+          elif new not in s: raise SystemExit('completePlayerProfile guard anchor not found')
+
+          # Direct submit guard for already-open/stale pages.
+          old = 'if(action==="player-apply-submit"){\n    if(playerApplyBusy) return;'
+          new = 'if(action==="player-apply-submit"){\n    if(window.BXH_PRODUCTION_REGISTRATION_OPEN!==true){ playerApplyError="正式站目前暫停新帳號申請，請使用官方 FINAL BETA 測試入口"; render(); return; }\n    if(playerApplyBusy) return;'
+          if old in s: s = s.replace(old, new, 1)
+          elif new not in s: raise SystemExit('player-apply-submit guard anchor not found')
+
+          p.write_text(s, encoding='utf-8')
+          print(f'Production account registration mode: {mode}')
+
+      - name: Verify gate state
+        shell: python
+        env:
+          DISPATCH_MODE: ${{ github.event.inputs.mode }}
+        run: |
+          from pathlib import Path
+          import os
+          s=Path('index.html').read_text(encoding='utf-8')
+          mode=(os.environ.get('DISPATCH_MODE') or os.environ.get('DEFAULT_MODE') or 'lock').strip().lower()
+          flag='true' if mode=='unlock' else 'false'
+          required=[
+            f'window.BXH_PRODUCTION_REGISTRATION_OPEN = {flag}',
+            'async applyPlayerAccount',
+            'async completePlayerProfile',
+            '正式站目前暫停新帳號申請'
+          ]
+          missing=[x for x in required if x not in s]
+          if missing: raise SystemExit(f'Gate verification failed: {missing}')
+          print('Registration gate verification passed.')
+
+      - name: Commit production gate state
+        shell: bash
+        run: |
+          if git diff --quiet -- index.html; then
+            echo "Production gate already in requested state."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Lock production new account registration"
+          git push
